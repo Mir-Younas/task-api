@@ -2,7 +2,23 @@
 
 A RESTful Task Management API built with **Node.js**, **Express**, **TypeScript**, **MongoDB**, and **Mongoose**.
 
-The API provides secure user authentication, role-based authorization, task CRUD operations, request validation, centralized error handling, HTTP request logging, and Swagger/OpenAPI documentation.
+The API provides secure user authentication, role-based authorization, task CRUD operations, request validation, centralized error handling, HTTP request logging, Swagger/OpenAPI documentation, and cloud deployment.
+
+## Live Deployment
+
+### Health Check
+
+```text
+https://task-api-production-8979.up.railway.app/health
+```
+
+### Swagger API Documentation
+
+```text
+https://task-api-production-8979.up.railway.app/api-docs
+```
+
+The API is deployed on **Railway** and uses **MongoDB Atlas** as the production database.
 
 ## Features
 
@@ -21,6 +37,8 @@ The API provides secure user authentication, role-based authorization, task CRUD
 - Morgan HTTP request logging
 - Swagger/OpenAPI documentation
 - Node.js version enforcement with engine strict mode
+- Railway deployment
+- MongoDB Atlas production database
 
 ## Tech Stack
 
@@ -28,12 +46,14 @@ The API provides secure user authentication, role-based authorization, task CRUD
 - Express
 - TypeScript
 - MongoDB
+- MongoDB Atlas
 - Mongoose
 - JSON Web Token (JWT)
 - Zod
 - Cookie Parser
 - Morgan
 - Swagger / OpenAPI
+- Railway
 
 ## API Endpoints
 
@@ -72,10 +92,16 @@ All Task endpoints require authentication.
 
 ## API Documentation
 
-Swagger UI is available during development at:
+### Local Swagger UI
 
 ```text
 http://localhost:5000/api-docs
+```
+
+### Production Swagger UI
+
+```text
+https://task-api-production-8979.up.railway.app/api-docs
 ```
 
 The documentation includes authentication requirements, request schemas, validation rules, path parameters, and response status codes.
@@ -118,7 +144,7 @@ src/
 
 ## Environment Variables
 
-Create a `.env` file in the project root with the required environment variables:
+Create a `.env` file in the project root for local development:
 
 ```env
 PORT=5000
@@ -142,6 +168,23 @@ The API runs locally at:
 
 ```text
 http://localhost:5000
+```
+
+## Production
+
+The application is deployed on Railway and uses MongoDB Atlas in production.
+
+Railway builds and starts the application using the scripts defined in `package.json`:
+
+```bash
+npm run build
+npm start
+```
+
+Use the production Swagger UI to explore and test the deployed API:
+
+```text
+https://task-api-production-8979.up.railway.app/api-docs
 ```
 
 ## Code Quality
@@ -182,7 +225,7 @@ Unexpected server errors return a generic `500 Internal Server Error` response w
 
 ## Request Logging
 
-Morgan is used to log HTTP requests during development.
+Morgan is used to log HTTP requests.
 
 Example:
 
@@ -190,6 +233,10 @@ Example:
 POST /api/auth/login 200 24.312 ms - 128
 ```
 
-## License
+## Project Context
 
 This project was developed as part of a software engineering internship assignment.
+
+## License
+
+ISC
