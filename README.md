@@ -1,22 +1,26 @@
-# Task API
+# Task Management API
 
 A RESTful Task Management API built with **Node.js**, **Express**, **TypeScript**, **MongoDB**, and **Mongoose**.
 
-The API includes authentication, request validation, centralized error handling, cookie-based JWT sessions, and structured HTTP request logging.
+The API provides secure user authentication, role-based authorization, task CRUD operations, request validation, centralized error handling, HTTP request logging, and Swagger/OpenAPI documentation.
 
 ## Features
 
-- User signup
-- User login
-- User logout
-- JWT authentication with HTTP cookies
+- User signup, login, and logout
+- JWT authentication using HTTP-only cookies
 - Password hashing
+- User roles: `user` and `admin`
+- User status: `active` and `blocked`
+- Role-based task authorization
+- Complete Task CRUD operations
+- Task ownership using author references
 - Zod request validation
 - Centralized error handling
 - Custom application errors
 - MongoDB integration with Mongoose
-- HTTP request logging with Morgan
-- Node.js engine enforcement
+- Morgan HTTP request logging
+- Swagger/OpenAPI documentation
+- Node.js version enforcement with engine strict mode
 
 ## Tech Stack
 
@@ -29,6 +33,7 @@ The API includes authentication, request validation, centralized error handling,
 - Zod
 - Cookie Parser
 - Morgan
+- Swagger / OpenAPI
 
 ## API Endpoints
 
@@ -40,36 +45,73 @@ The API includes authentication, request validation, centralized error handling,
 
 ### Authentication
 
-Base path:
-
-```text
-/api/auth
-```
-
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | POST | `/api/auth/signup` | Register a new user |
 | POST | `/api/auth/login` | Authenticate a user |
 | POST | `/api/auth/logout` | Logout the authenticated user |
 
+### Tasks
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/api/tasks` | Create a task |
+| GET | `/api/tasks` | Fetch all tasks |
+| GET | `/api/tasks/:taskId` | Fetch a task by ID |
+| PATCH | `/api/tasks/:taskId` | Update a task |
+| DELETE | `/api/tasks/:taskId` | Delete a task |
+
+## Authorization
+
+All Task endpoints require authentication.
+
+- Users can create and view tasks.
+- Users can update and delete their own tasks.
+- Admins can update and delete any task.
+- Blocked users cannot access protected endpoints.
+
+## API Documentation
+
+Swagger UI is available during development at:
+
+```text
+http://localhost:5000/api-docs
+```
+
+The documentation includes authentication requirements, request schemas, validation rules, path parameters, and response status codes.
+
 ## Project Structure
 
 ```text
 src/
+├── config/
+│   ├── db.ts
+│   └── swagger.ts
+├── constants/
 ├── controllers/
-│   └── auth.controller.ts
+│   ├── auth.controller.ts
+│   └── task.controller.ts
+├── docs/
+│   ├── auth.swagger.ts
+│   └── task.swagger.ts
 ├── middleware/
 │   ├── auth.middleware.ts
 │   ├── error.middleware.ts
 │   └── validate.middleware.ts
 ├── models/
-│   └── user.model.ts
+│   ├── user.model.ts
+│   └── task.model.ts
 ├── routes/
-│   └── auth.routes.ts
+│   ├── auth.routes.ts
+│   └── task.routes.ts
+├── services/
+│   ├── auth.service.ts
+│   └── task.service.ts
+├── types/
 ├── utils/
-│   └── app-error.ts
 ├── validation/
-│   └── auth.schema.ts
+│   ├── auth.schema.ts
+│   └── task.schema.ts
 ├── app.ts
 └── server.ts
 ```
@@ -82,7 +124,6 @@ Create a `.env` file in the project root with the required environment variables
 PORT=5000
 MONGODB_URI=
 JWT_SECRET=
-JWT_EXPIRES_IN=
 ```
 
 ## Installation
@@ -103,17 +144,32 @@ The API runs locally at:
 http://localhost:5000
 ```
 
-## Node.js Version
+## Code Quality
+
+```bash
+npm run lint
+npm run build
+```
+
+## Node.js Version & Engine Enforcement
 
 ```text
 Node.js >= 22.14.0 < 23
 ```
 
-The required Node.js version is enforced through the `engines` field in `package.json` and `engine-strict=true` in `.npmrc`.
+The supported Node.js version is defined in `package.json` using the `engines` field.
 
-## Error Response
+Engine strict mode is enabled in `.npmrc`:
 
-Application errors follow a consistent JSON format:
+```text
+engine-strict=true
+```
+
+Installing dependencies with an unsupported Node.js version will fail with an `EBADENGINE` error.
+
+## Error Handling
+
+Application errors follow a consistent JSON response format:
 
 ```json
 {
@@ -122,14 +178,7 @@ Application errors follow a consistent JSON format:
 }
 ```
 
-Unexpected server errors return:
-
-```json
-{
-  "success": false,
-  "message": "Internal server error"
-}
-```
+Unexpected server errors return a generic `500 Internal Server Error` response while the original error is logged internally.
 
 ## Request Logging
 
@@ -143,4 +192,4 @@ POST /api/auth/login 200 24.312 ms - 128
 
 ## License
 
-This project is developed as part of a software engineering internship assignment.
+This project was developed as part of a software engineering internship assignment.

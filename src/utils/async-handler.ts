@@ -1,13 +1,21 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import {
+  NextFunction,
+  Request,
+  RequestHandler,
+  Response,
+} from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 
-export const asyncHandler = <ReqBody = unknown>(
+export const asyncHandler = <
+  ReqBody = Record<string, never>,
+  ReqParams extends ParamsDictionary = ParamsDictionary,
+>(
   fn: (
-    req: Request<ParamsDictionary, unknown, ReqBody>,
-    res: Response,
+    req: Request<ReqParams, object, ReqBody>,
+    res: Response<object>,
     next: NextFunction,
-  ) => Promise<unknown>,
-): RequestHandler<ParamsDictionary, unknown, ReqBody> => {
+  ) => Promise<Response<object> | void>,
+): RequestHandler<ReqParams, object, ReqBody> => {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

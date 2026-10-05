@@ -23,9 +23,8 @@ export const signupSchema = z.object({
     .max(50, "Name cannot exceed 50 characters"),
 
   email: z
-    .string()
-    .trim()
     .email("Invalid email address")
+    .trim()
     .transform((email) => email.toLowerCase()),
 
   password: strongPasswordSchema,
@@ -33,9 +32,8 @@ export const signupSchema = z.object({
 
 export const loginSchema = z.object({
   email: z
-    .string()
-    .trim()
     .email("Invalid email address")
+    .trim()
     .transform((email) => email.toLowerCase()),
 
   password: z.string().min(1, "Password is required"),

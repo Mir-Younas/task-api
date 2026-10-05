@@ -1,4 +1,5 @@
-import { Schema, model, models, InferSchemaType } from 'mongoose';
+import { Schema, model, models, InferSchemaType } from "mongoose";
+import { UserRole, UserStatus } from "../constants/auth.constants";
 
 const userSchema = new Schema(
   {
@@ -21,6 +22,20 @@ const userSchema = new Schema(
       required: true,
       select: false,
     },
+
+    role: {
+      type: String,
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: Object.values(UserStatus),
+      default: UserStatus.ACTIVE,
+      required: true,
+    },
   },
   {
     timestamps: true,
@@ -29,5 +44,4 @@ const userSchema = new Schema(
 
 export type UserDocument = InferSchemaType<typeof userSchema>;
 
-export const User =
-  models.User || model('User', userSchema);
+export const User = models.User || model("User", userSchema);

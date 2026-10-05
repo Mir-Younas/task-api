@@ -3,6 +3,9 @@ import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes";
 import { globalErrorHandler } from "./middleware/error.middleware";
 import morgan from "morgan";
+import taskRouter from "./routes/task.routes";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
@@ -18,6 +21,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/tasks", taskRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(globalErrorHandler);
 
