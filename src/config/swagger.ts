@@ -16,7 +16,11 @@ const swaggerOptions: swaggerJsdoc.Options = {
     servers: [
       {
         url: "http://localhost:5000",
-        description: "Local API Server",
+        description: "Local Development Environment",
+      },
+      {
+        url: "https://task-api-production-8979.up.railway.app",
+        description: "Production Environment",
       },
     ],
 
