@@ -9,9 +9,12 @@ import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan("dev"));
+}
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(morgan("dev"));
 
 app.get("/health", (_req, res) => {
   res.status(200).json({
