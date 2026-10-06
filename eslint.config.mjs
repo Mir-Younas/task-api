@@ -30,4 +30,24 @@ export default tseslint.config(
       ],
     },
   },
+
+  {
+    files: ["tests/**/*.ts"],
+
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
 );

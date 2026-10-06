@@ -5,6 +5,15 @@ import { AppError } from "../utils/app-error";
 import { generateAccessToken } from "../utils/jwt";
 import { LoginInput, SignupInput } from "../validation/auth.schema";
 
+const isDuplicateKeyError = (error: unknown): error is { code: number } => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === 11000
+  );
+};
+
 export const signupUser = async (body: SignupInput) => {
   const existingUser = await User.findOne({
     email: body.email,
@@ -16,17 +25,25 @@ export const signupUser = async (body: SignupInput) => {
 
   const hashedPassword = await bcrypt.hash(body.password, 12);
 
-  const user = await User.create({
-    name: body.name,
-    email: body.email,
-    password: hashedPassword,
-  });
+  try {
+    const user = await User.create({
+      name: body.name,
+      email: body.email,
+      password: hashedPassword,
+    });
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  };
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
+  } catch (error: unknown) {
+    if (isDuplicateKeyError(error)) {
+      throw new AppError("Email already registered", 409);
+    }
+
+    throw error;
+  }
 };
 
 export const loginUser = async (body: LoginInput) => {
