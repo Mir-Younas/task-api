@@ -152,7 +152,6 @@ tests/
 eslint.config.mjs
 jest.config.cjs
 tsconfig.json
-tsconfig.test.json
 ```
 
 ## Environment Variables
@@ -277,8 +276,6 @@ Run the integration test suite:
 ```bash
 npm test
 ```
-
-The production TypeScript configuration and test configuration are kept separate using `tsconfig.json` and `tsconfig.test.json`.
 
 A successful project check should complete all of the following without errors:
 
