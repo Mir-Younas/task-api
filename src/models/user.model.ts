@@ -1,7 +1,19 @@
-import { Schema, model, models, InferSchemaType } from "mongoose";
+import { Schema, model } from "mongoose";
 import { UserRole, UserStatus } from "../constants/auth.constants";
 
-const userSchema = new Schema(
+export type UserType = {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  status: UserStatus;
+  failedLoginAttempts: number;
+  loginLockedUntil: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+const userSchema = new Schema<UserType>(
   {
     name: {
       type: String,
@@ -36,12 +48,21 @@ const userSchema = new Schema(
       default: UserStatus.ACTIVE,
       required: true,
     },
+
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+
+    loginLockedUntil: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-export type UserDocument = InferSchemaType<typeof userSchema>;
-
-export const User = models.User || model("User", userSchema);
+export const User = model<UserType>("User", userSchema);

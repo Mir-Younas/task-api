@@ -2,7 +2,7 @@
 
 A RESTful Task Management API built with **Node.js**, **Express**, **TypeScript**, **MongoDB**, and **Mongoose**.
 
-The API provides secure user authentication, role-based authorization, task CRUD operations, request validation, centralized error handling, HTTP request logging, Swagger/OpenAPI documentation, automated integration testing, and cloud deployment.
+The API provides secure user authentication, login abuse protection, role-based authorization, task CRUD operations, request validation, centralized error handling, HTTP request logging, Swagger/OpenAPI documentation, automated integration testing, and cloud deployment.
 
 ## Live Deployment
 
@@ -21,6 +21,12 @@ The API is deployed on **Railway** and uses **MongoDB Atlas** as the production 
 - User signup, login, and logout
 - JWT authentication using HTTP-only cookies
 - Password hashing with bcrypt
+- Login endpoint rate limiting
+- IP-based protection against excessive login requests
+- Account-level failed login attempt tracking
+- Progressive login cooldowns after repeated failed attempts
+- Atomic failed-login updates to prevent concurrency issues
+- Successful login resets failed login attempts and cooldown state
 - User roles: `user` and `admin`
 - User status: `active` and `blocked`
 - Role-based task authorization
@@ -53,6 +59,7 @@ The API is deployed on **Railway** and uses **MongoDB Atlas** as the production 
 - Zod
 - Cookie Parser
 - Morgan
+- express-rate-limit
 - Swagger / OpenAPI
 - Jest
 - Supertest
@@ -96,6 +103,62 @@ All task endpoints require authentication.
 - Admins can update and delete any task.
 - Blocked users cannot access protected endpoints.
 
+## Login Security
+
+The authentication system includes both IP-level and account-level protection against repeated login attempts.
+
+### Login Rate Limiting
+
+The `/api/auth/login` endpoint uses `express-rate-limit` to restrict excessive login requests from the same IP address.
+
+When the configured request limit is exceeded, the API returns:
+
+```json
+{
+  "success": false,
+  "message": "Too many login requests. Please try again later."
+}
+```
+
+with HTTP status:
+
+```text
+429 Too Many Requests
+```
+
+Rate limiting runs before the login controller and service, preventing excessive requests from reaching password verification and database login logic.
+
+### Failed Login Protection
+
+Failed password attempts are also tracked at the user-account level.
+
+Progressive cooldowns are applied as follows:
+
+| Failed Attempt | Result |
+| --- | --- |
+| 1–4 | `401 Unauthorized` |
+| 5 | 30-second cooldown |
+| 6 | 1-minute cooldown |
+| 7 | 5-minute cooldown |
+| 8+ | 15-minute cooldown |
+
+Requests made while an account cooldown is active do not increase the failed-login counter or extend the existing cooldown.
+
+A successful login resets:
+
+```text
+failedLoginAttempts = 0
+loginLockedUntil = null
+```
+
+Failed-login state updates are performed atomically in MongoDB to prevent concurrent login requests from overwriting the failed-attempt counter.
+
+The IP rate limiter and account-level cooldown operate independently:
+
+- The rate limiter protects the login endpoint from request flooding.
+- Account-level protection prevents repeated password guessing against a specific account.
+- Either layer can return `429 Too Many Requests` depending on which restriction is active.
+
 ## API Documentation
 
 ### Local Swagger UI
@@ -125,6 +188,7 @@ src/
 ├── middleware/
 │   ├── auth.middleware.ts
 │   ├── error.middleware.ts
+│   ├── rate-limit.middleware.ts
 │   └── validate.middleware.ts
 ├── models/
 │   ├── user.model.ts
@@ -137,6 +201,11 @@ src/
 │   └── task.service.ts
 ├── types/
 ├── utils/
+│   ├── app-error.ts
+│   ├── async-handler.ts
+│   ├── auth-cookie.ts
+│   ├── jwt.ts
+│   └── login-security.ts
 ├── validation/
 │   ├── auth.schema.ts
 │   └── task.schema.ts
@@ -286,6 +355,8 @@ npm run build
 npm test
 ```
 
+The current test suite passes all **22 integration tests**.
+
 ## Production
 
 The application is deployed on **Railway** and uses **MongoDB Atlas** as the production database.
@@ -335,6 +406,8 @@ Expected application and client errors return appropriate HTTP status codes.
 Unexpected server errors return a generic `500 Internal Server Error` response while the original error is logged internally.
 
 Malformed JSON requests are handled by the centralized error middleware and return a `400 Bad Request` response.
+
+Authentication protection can also return `429 Too Many Requests` when either the login rate limit or account-level login cooldown is active.
 
 ## Request Logging
 
