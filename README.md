@@ -21,6 +21,7 @@ The API is deployed on **Railway** and uses **MongoDB Atlas** as the production 
 - User signup, login, and logout
 - JWT authentication using HTTP-only cookies
 - Password hashing with bcrypt
+- Strong password validation with an 8–64 character length requirement
 - Login endpoint rate limiting
 - IP-based protection against excessive login requests
 - Account-level failed login attempt tracking
@@ -32,6 +33,8 @@ The API is deployed on **Railway** and uses **MongoDB Atlas** as the production 
 - Role-based task authorization
 - Complete Task CRUD operations
 - Task ownership using author references
+- Task author responses expose only the author's name
+- Task updates reject requests when no values have changed
 - Zod request validation
 - Centralized error handling
 - Custom application errors
@@ -281,7 +284,7 @@ Run all tests:
 npm test
 ```
 
-The test suite currently contains **22 integration tests** across two test suites:
+The test suite currently contains **23 integration tests** across two test suites:
 
 - Authentication API tests
 - Task API tests
@@ -316,9 +319,12 @@ The task test suite covers:
 - Missing task handling
 - Updating a task by its author
 - Empty update validation
+- Rejecting updates when no task values have changed
 - Preventing another user from updating a task
 - Deleting a task by its author
 - Preventing another user from deleting a task
+
+Task responses populate the author with the author's name only. The author's email address and user ID are not exposed in task responses.
 
 ## Code Quality
 
@@ -355,7 +361,7 @@ npm run build
 npm test
 ```
 
-The current test suite passes all **22 integration tests**.
+The current test suite passes all **23 integration tests**.
 
 ## Production
 
@@ -408,6 +414,8 @@ Unexpected server errors return a generic `500 Internal Server Error` response w
 Malformed JSON requests are handled by the centralized error middleware and return a `400 Bad Request` response.
 
 Authentication protection can also return `429 Too Many Requests` when either the login rate limit or account-level login cooldown is active.
+
+Task update requests that contain valid fields but do not change any existing task values return a `400 Bad Request` response with a `No changes detected` message.
 
 ## Request Logging
 

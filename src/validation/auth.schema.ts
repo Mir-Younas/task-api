@@ -2,16 +2,17 @@ import { z } from "zod";
 
 const strongPasswordSchema = z
   .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(64, "Password cannot exceed 64 characters")
   .refine(
     (password) =>
-      password.length >= 8 &&
       /[A-Z]/.test(password) &&
       /[a-z]/.test(password) &&
       /[0-9]/.test(password) &&
       /[^A-Za-z0-9]/.test(password),
     {
       message:
-        "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
     },
   );
 

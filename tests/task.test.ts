@@ -72,7 +72,18 @@ describe("Task API", () => {
       });
 
       expect(response.body.task._id).toBeDefined();
-      expect(response.body.task.author).toBeDefined();
+
+      expect(response.body.task.author).toEqual({
+        name: user.name,
+      });
+
+      expect(
+        response.body.task.author.email,
+      ).toBeUndefined();
+
+      expect(
+        response.body.task.author._id,
+      ).toBeUndefined();
     });
 
     it("should reject invalid task data", async () => {
@@ -111,10 +122,17 @@ describe("Task API", () => {
         description: validTask.description,
       });
 
-      expect(response.body.tasks[0].author).toMatchObject({
+      expect(response.body.tasks[0].author).toEqual({
         name: user.name,
-        email: user.email,
       });
+
+      expect(
+        response.body.tasks[0].author.email,
+      ).toBeUndefined();
+
+      expect(
+        response.body.tasks[0].author._id,
+      ).toBeUndefined();
     });
   });
 
@@ -141,10 +159,17 @@ describe("Task API", () => {
         description: validTask.description,
       });
 
-      expect(response.body.task.author).toMatchObject({
+      expect(response.body.task.author).toEqual({
         name: user.name,
-        email: user.email,
       });
+
+      expect(
+        response.body.task.author.email,
+      ).toBeUndefined();
+
+      expect(
+        response.body.task.author._id,
+      ).toBeUndefined();
     });
 
     it("should return 400 for an invalid task ID", async () => {
@@ -196,9 +221,22 @@ describe("Task API", () => {
       expect(response.body.message).toBe(
         "Task updated successfully",
       );
+
       expect(response.body.task.title).toBe(
         "Updated task title",
       );
+
+      expect(response.body.task.author).toEqual({
+        name: user.name,
+      });
+
+      expect(
+        response.body.task.author.email,
+      ).toBeUndefined();
+
+      expect(
+        response.body.task.author._id,
+      ).toBeUndefined();
     });
 
     it("should reject an empty update", async () => {
@@ -216,6 +254,29 @@ describe("Task API", () => {
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
+    });
+
+    it("should reject an update when no values have changed", async () => {
+      const agent = await createAuthenticatedAgent(user);
+
+      const createResponse = await agent
+        .post("/api/tasks")
+        .send(validTask);
+
+      const taskId = createResponse.body.task._id as string;
+
+      const response = await agent
+        .patch(`/api/tasks/${taskId}`)
+        .send({
+          title: validTask.title,
+          description: validTask.description,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe(
+        "No changes detected",
+      );
     });
 
     it("should prevent another user from updating the task", async () => {
