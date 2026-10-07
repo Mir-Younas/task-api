@@ -24,20 +24,24 @@ const findTaskOrThrow = async (taskId: string) => {
 };
 
 export const createTask = async (userId: string, body: CreateTaskInput) => {
-  return Task.create({
+  const task = await Task.create({
     ...body,
     author: userId,
   });
+
+  await task.populate("author", "name -_id");
+
+  return task;
 };
 
 export const fetchTasks = async () => {
-  return Task.find().populate("author", "name email").sort({ createdAt: -1 });
+  return Task.find().populate("author", "name -_id").sort({ createdAt: -1 });
 };
 
 export const fetchTaskById = async (taskId: string) => {
   const task = await findTaskOrThrow(taskId);
 
-  await task.populate("author", "name email");
+  await task.populate("author", "name -_id");
 
   return task;
 };
@@ -57,9 +61,19 @@ export const updateTask = async (
     throw new AppError("You are not allowed to update this task", 403);
   }
 
+  const hasChanges = Object.entries(body).some(
+    ([key, value]) => task.get(key) !== value,
+  );
+
+  if (!hasChanges) {
+    throw new AppError("No changes detected", 400);
+  }
+
   Object.assign(task, body);
 
   await task.save();
+
+  await task.populate("author", "name -_id");
 
   return task;
 };
@@ -79,6 +93,8 @@ export const deleteTask = async (
   }
 
   await task.deleteOne();
+
+  await task.populate("author", "name -_id");
 
   return task;
 };
