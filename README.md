@@ -41,6 +41,8 @@ The API is deployed on **Railway** and uses **MongoDB Atlas** as the production 
 - MongoDB integration with Mongoose
 - Morgan HTTP request logging
 - Swagger/OpenAPI documentation
+- CORS configuration for cross-origin API access
+- Express trust proxy configuration for Railway deployment
 - Jest integration testing
 - Isolated test database using MongoDB Memory Server
 - Concurrent signup race-condition testing
@@ -61,6 +63,7 @@ The API is deployed on **Railway** and uses **MongoDB Atlas** as the production 
 - bcrypt
 - Zod
 - Cookie Parser
+- CORS
 - Morgan
 - express-rate-limit
 - Swagger / OpenAPI
@@ -172,6 +175,8 @@ http://localhost:5000/api-docs
 
 https://task-api-production-8979.up.railway.app/api-docs
 
+The Swagger configuration provides both local and production server options. CORS allows the deployed Swagger UI to send requests to a locally running API when the local development server is selected.
+
 The documentation includes authentication requirements, request schemas, validation rules, path parameters, and response status codes.
 
 ## Project Structure
@@ -235,6 +240,7 @@ NODE_ENV=development
 PORT=5000
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/task-api
 JWT_SECRET=replace_with_a_secure_random_secret
+CLIENT_URL=https://your-client-domain.com
 ```
 
 For local development, create a `.env` file in the project root using `.env.example` as a template:
@@ -249,6 +255,7 @@ Then replace the example values with your own configuration.
 - `PORT` — Port used by the Express server.
 - `MONGODB_URI` — MongoDB connection string.
 - `JWT_SECRET` — Secret key used to sign and verify JWT access tokens.
+- `CLIENT_URL` — Allowed client origin used by the CORS configuration.
 
 > **Security:** Never commit your real `.env` file, MongoDB credentials, or JWT secret to the repository. The `.env.example` file contains placeholder values only.
 
@@ -366,6 +373,8 @@ The current test suite passes all **23 integration tests**.
 ## Production
 
 The application is deployed on **Railway** and uses **MongoDB Atlas** as the production database.
+
+Express is configured to trust Railway's proxy so IP-based rate limiting can correctly identify forwarded client IP addresses in production.
 
 Railway builds and starts the application using the scripts defined in `package.json`:
 
